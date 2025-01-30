@@ -1,6 +1,9 @@
 import React, { useState } from 'react'
 import { FaUserCircle } from "react-icons/fa";
 import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner';
+import app from '../firebase';
+import { getDatabase,set,push,ref } from 'firebase/database';
 
 const CreateEmployee = () => {
 
@@ -18,19 +21,10 @@ const CreateEmployee = () => {
     }
 
     try {
-     const response =  await fetch("http://localhost:4000/employees",{
-         method: "POST",
-         body: formData
-      })   
-      const data = await response.json();
-      if(response.ok){
-         navigate("/employees")
-      }else if(response.status === 400) {
-         setValidationErrors(data)
-      }
-      else{
-         alert("Unable to add Employee!")
-      }
+     const db = getDatabase(app);
+     const newDocRef = push(ref(db, "employees"));
+     set(newDocRef,employee);
+     toast.success("Employee added successfully!!")
     } catch (error) {
        alert("Unable to connect to the Server!!!")
     }

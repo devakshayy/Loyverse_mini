@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { AiOutlineDelete, AiFillDelete } from "react-icons/ai";
+import { Link, useNavigate} from "react-router-dom";
 import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
 
 const Customers = () => {
@@ -87,7 +86,7 @@ const Customers = () => {
   useEffect(getCustomers, []);
 
   const viewHandler = (id) => {
-    navigate(`/customers/${id}`);
+    navigate(`/customers/view/${id}`);
   };
  
   const handleSearch = (e) => {

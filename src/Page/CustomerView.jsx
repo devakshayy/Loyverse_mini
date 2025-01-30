@@ -56,7 +56,7 @@ const CustomerView = () => {
   }
 
   const editNavHandler = (id) => {
-      navigate(`/editcustomer/${id}`)
+      navigate(`/customers/edit/${id}`)
   }
 
   

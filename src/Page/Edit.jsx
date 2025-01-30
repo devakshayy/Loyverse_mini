@@ -1,31 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import app from "../firebase";
+import { getDatabase,get,set,ref } from "firebase/database";
+import { toast } from "sonner";
 
 const Edit = () => {
-  const params = useParams()
+  const {id} = useParams()
   const [initialData, setInitialData] = useState()     //not display the form when no data in initial data
   const [validationErrors, setValidaionErrors] = useState({});
-
   const navigate = useNavigate();
 
-  function getItems () {
-       fetch("http://localhost:4000/items/" + params.id)
-       .then(response => {
-          if(response.ok) {
-               return response.json()
-          }
-          throw new Error()
-       })
-       .then(data => {
-         setInitialData(data)
-       })
-       .catch(error => {
-          alert("Unable to read the product details")
-       })
-  }
-
-  useEffect(getItems,[])
-
+  useEffect(() => {
+     const getItems = async () => {
+      const db = getDatabase(app);
+      const dbRef = ref(db,`items/${id}`);
+      const snapShot = await get(dbRef);
+      if(snapShot.exists()){
+        setInitialData(snapShot.val());
+      }else{
+        alert("Unable to get the item")
+      }
+     }
+     getItems()
+  }, [])
+  
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -33,43 +31,60 @@ const Edit = () => {
     const formData = new FormData(event.target);
     const item = Object.fromEntries(formData.entries());
 
-    if (
-      !item.code ||
-      !item.barcode ||
-      !item.name ||
-      !item.price ||
-      !item.cost ||
-      !item.category ||
-      !item.description
-    ) {
-      alert("Please fill all the fields!");
-      return;
-    }
-    try {
-      const response = await fetch("http://localhost:4000/items/" + params.id , {
-        method: "PATCH",
-        body: formData,
-      });
-      const data = await response.json();
+       
+     let validationErrors = {};
 
-      if (response.ok) {
-        // item created correctly
-        navigate("/items");
-      } else if (response.status === 400) {
-        setValidaionErrors(data);
-      } else {
-        alert("Unable to Update the product!!");
-      }
+     if (!item.code || item.code.length !== 4) {
+      validationErrors.code = "The Code must have 4 digits";
+     }
+     if (!item.barcode || item.barcode.length !== 13) {
+      validationErrors.barcode = "The Barcode must have 13 digits";
+     }
+     if (!item.name || item.name.length < 2) {
+      validationErrors.name = "The name length should be at least 2 characters";
+     }
+     if (!item.price || isNaN(item.price) || Number(item.price) <= 0) {
+      validationErrors.price = "The Price is not valid";
+     }
+     if (!item.cost || isNaN(item.cost) || Number(item.cost) <= 0) {
+      validationErrors.cost = "The Cost is not valid";
+     }
+     if (!item.category || item.category.length < 2) {
+      validationErrors.category = "The category should be at least 2 characters";
+     }
+     if (!item.description || item.description.length < 10) {
+      validationErrors.description = "The description length should be at least 10 characters";
+     }
+   
+     if (Object.keys(validationErrors).length > 0) {
+      setValidaionErrors(validationErrors);
+       return;
+     }
+     try {
+      const db = getDatabase(app);
+      const updateDocRef = ref(db, `items/${id}`);
+    
+     
+      const updateItemPromise = set(updateDocRef, item);
+    
+      toast.promise(updateItemPromise, {
+        loading: "Saving item...",
+        success: () => {
+          navigate("/items"); 
+          return "Item updated successfully!";
+        },
+        error: "Failed to update item!",
+      });
     } catch (error) {
-      alert("Unabel to connect to the server!!!");
-    }
+      toast.error("Unable to connect to the server!");
+    }    
   }
   return (
     <div className="p-4 h-screen w-full bg-white overflow-auto text-gray-900">
       { initialData && 
       <form id="form"  onSubmit={handleSubmit} className="bg-white w-1/2 rounded-md mb-20 shadow-lg"> 
           <div className="border-b-[1px] px-3 py-2">
-            <a className="font-bold text-[#4baf4f]">Edit Item</a>
+            <a className="font-bold text-[#4baf4f]">Edit {initialData.name}</a>
           </div>
           <div className=" w-full p-4 flex flex-col gap-2">
             {/* Item Code */}
@@ -85,7 +100,7 @@ const Edit = () => {
                   id="id"
                   readOnly
                   autoComplete="off"
-                  defaultValue={params.id}
+                  defaultValue={id}
                   className="mt-1 block w-full p-2 text-xs bg-[#f4f5f6] rounded-md shadow-sm focus:ring-none focus:outline-gray-300"
                 />
               </div>
@@ -235,7 +250,7 @@ const Edit = () => {
 
             {/* Image */}
 
-            <div className="flex items-center justify-center gap-28">
+            {/* <div className="flex items-center justify-center gap-28">
             
               <div >
                 <img
@@ -244,9 +259,9 @@ const Edit = () => {
                  src={"http://localhost:4000/images/" + initialData.imageFilename} alt="..." />
 
               </div>
-            </div>
+            </div> */}
 
-            <div className="flex items-center justify-between gap-2">
+            {/* <div className="flex items-center justify-between gap-2">
               <label
                 htmlFor="image"
                 className="block text-sm font-medium text-gray-700"
@@ -265,10 +280,10 @@ const Edit = () => {
                   {validationErrors.image}
                 </span>
               </div>
-            </div>
+            </div> */}
             {/* CreatedAt */}
             
-            <div className="flex items-center justify-between gap-2">
+            {/* <div className="flex items-center justify-between gap-2">
               <label
                 className="block text-sm font-medium text-gray-700"
               >
@@ -279,11 +294,11 @@ const Edit = () => {
                   readOnly
                   id="image"
                   autoComplete="off"
-                  defaultValue={initialData.createdAt.slice(0,10)}
+                  defaultValue={new Date}
                   className="mt-1 block w-full p-2 text-xs bg-[#f4f5f6] rounded-md shadow-sm focus:ring-none focus:outline-gray-300"
                 />
               </div>
-            </div>
+            </div> */}
             {/* Description */}
 
             <div className="flex items-center justify-between gap-2">
