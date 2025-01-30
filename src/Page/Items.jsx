@@ -3,6 +3,7 @@ import { FaAngleRight, FaAngleLeft, FaCaretDown } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import app from "../firebase";
 import { getDatabase,get,ref,remove } from "firebase/database";
+import { toast } from 'sonner';
 
 const Items = () => {
   const navigate = useNavigate();
@@ -99,7 +100,7 @@ const Items = () => {
     const db = getDatabase(app);
     const dbRef = ref(db,`items/${id}`)
     await remove(dbRef);
-    alert(`Item "${name}" Removed Successfully`)
+    toast.error(`Item "${name}" has been removed`)
     window.location.reload();
   }
 
@@ -144,10 +145,13 @@ const Items = () => {
         )}
             
             
-            <button className="py-1 px-2 text-xs font-medium rounded-sm text-gray-900 hover:bg-[#f2f2f2]">
+            <button
+                onClick={() => {toast.warning(`"import" is not available right now!`,{position:"bottom-right"})}}
+                className="py-1 px-2 text-xs font-medium rounded-sm text-gray-900 hover:bg-[#f2f2f2]">
               IMPORT
             </button>
-            <button className="py-1 px-2 text-xs font-medium rounded-sm text-gray-900 hover:bg-[#f2f2f2]">
+            <button onClick={() =>{toast.warning(`"Export" is not available right now!`,{position:"bottom-right"})}} 
+                    className="py-1 px-2 text-xs font-medium rounded-sm text-gray-900 hover:bg-[#f2f2f2]">
               EXPORT
             </button>
           </div>
