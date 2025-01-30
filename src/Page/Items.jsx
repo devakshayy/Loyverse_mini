@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { FaAngleRight, FaAngleLeft, FaCaretDown } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
+import app from "../firebase";
+import { getDatabase,get,ref,remove } from "firebase/database";
 
 const Items = () => {
   const navigate = useNavigate();
@@ -67,44 +69,38 @@ const Items = () => {
     }
   };
   
-
-  
   useEffect(() => {
     setFilteredItem(items);
   }, [items]);
   
-  const getProducts = () => {
-    fetch("http://localhost:4000/items")
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
+  useEffect(() => {
+     const getProducts = async () => {
+        const db = getDatabase(app);
+        const dbRef = ref(db,"items");
+        const snapShot = await get(dbRef);
+        if(snapShot.exists()){
+          // setItems(Object.values(snapShot.val()));
+          const myData = snapShot.val();
+          const tempArray = Object.keys(myData).map(myFireid => {
+            return {
+               ...myData[myFireid],
+               id:myFireid
+            }
+          })
+          setItems(tempArray)
+        }else{
+          alert("Unable to get itmes")
         }
-        throw new Error();
-      })
-      .then((data) => {
-        setItems(data);
-      })
-      .catch((error) => {
-        alert("Unabel to get the data");
-      });
-  };
-
-  useEffect(getProducts, []);
-
-  function deleteItem(id) {
-    fetch("http://localhost:4000/items/" + id, {
-      method: "DELETE",
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error();
-        }
-
-        getProducts();
-      })
-      .catch((error) => {
-        alert("Unable to Delete the product");
-      });
+     }
+     getProducts()
+  }, [])
+  
+  const deleteItem = async (id,name) => {
+    const db = getDatabase(app);
+    const dbRef = ref(db,`items/${id}`)
+    await remove(dbRef);
+    alert(`Item "${name}" Removed Successfully`)
+    window.location.reload();
   }
 
   const viewHandler = (id) => {
@@ -118,7 +114,6 @@ const Items = () => {
         setFilteredItem(items)
      }else {
       const filteredItem = items.filter(item => 
-                                          item.id.toString().includes(inputValue) ||
                                           item.name.toLowerCase().includes(inputValue.toLowerCase()) ||
                                           item.code.toString().includes(inputValue) || item.barcode.toString().includes(inputValue) ||
                                           item.category.toLowerCase().includes(inputValue.toLowerCase()));
@@ -229,9 +224,6 @@ const Items = () => {
                     </div>
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    ID
-                  </th>
-                  <th scope="col" className="px-6 py-3">
                     Code
                   </th>
                   <th scope="col" className="px-6 py-3">
@@ -280,7 +272,6 @@ const Items = () => {
                         </label>
                       </div>
                     </td>
-                    <td className="px-6 py-4">{item.id}</td>
                     <td className="px-6 py-4">{item.code}</td>
                     <td className="px-6 py-4">{item.barcode}</td>
                     <th
@@ -303,7 +294,7 @@ const Items = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          deleteItem(item.id);
+                          deleteItem(item.id,item.name);
                         }}
                         //  onClick={() => deleteItem(item.id)}
                         className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"

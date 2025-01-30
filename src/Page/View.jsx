@@ -1,49 +1,45 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import app from "../firebase";
+import { getDatabase,get,ref } from "firebase/database";
 
 const View = () => {
-  const params = useParams()
+  const {id} = useParams()
   
   const [initialData, setInitialData] = useState({})
   const [activeTab ,setActiveTab] = useState("Overview");
-  const tabs = ["Overview", "Sales Information", "History"];   //for out tab buttons repeataions 
-
-
-   function getItems () {
-         fetch("http://localhost:4000/items/" + params.id)
-         .then(response => {
-            if(response.ok) {
-                 return response.json()
-            }
-            throw new Error()
-         })
-         .then(data => {
-           setInitialData(data)
-         })
-         .catch(error => {
-            alert("Unable to read the product details")
-         })
-    }
-  
-  useEffect(getItems,[])
+  const tabs = ["Overview", "Sales Information", "History"];   
    
+  useEffect(() => {
+     const getItems = async () => {
+       const db = getDatabase(app);
+       const dbRef = ref(db,`items/${id}`);
+       const snapShot = await get(dbRef);
+       if(snapShot.exists()){
+        setInitialData(snapShot.val());
+       }else {
+        alert("Uable to get the item details!!!")
+       }
+     }
+     getItems()
+  }, [id])  
 
   const overviewData = {
-    Code: initialData.code,
-    Barcode: initialData.barcode,
-    Name: initialData.name,
-    Category: initialData.category,
-    Description: initialData.description
+    Code: initialData?.code || '-----' ,
+    Barcode: initialData?.barcode || '-----'  ,
+    Name: initialData?.name || '-----' ,
+    Category: initialData?.category || '-----' ,
+    Description: initialData?.description || '-----' 
   };
 
   const salesInformationData = {
-    Price: initialData.price,
-    Cost: initialData.cost,
+    Price: initialData?.price || '-----' ,
+    Cost: initialData?.cost || '-----' ,
     // Margin: `${data.margin}%`,
   };
 
   const historyData = {
-    CreatedAt: initialData.createdAt
+    CreatedAt: initialData?.createdAt ? initialData.createdAt.slice(0, 10) : '-----'
   };
 
   const renderContent = () => {
