@@ -4,38 +4,62 @@ import { Link, useNavigate } from "react-router-dom";
 import { MdEmail, MdCall, MdMessage } from "react-icons/md";
 import { FaLocationDot } from "react-icons/fa6";
 import { LiaBarcodeSolid } from "react-icons/lia";
+import app from "../firebase";
+import { getDatabase,set,push,ref } from "firebase/database";
+import { toast } from "sonner";
 
 const CreateCustomer = () => {
    const navigate = useNavigate()
    const [validationErrors,setValidationErrors] = useState({})
+
    const handleSubmit = async (e) => {
+
       e.preventDefault();
       const formData = new FormData(e.target);
       const customer = Object.fromEntries(formData.entries());
-      
-      if(!customer.name || !customer.email || !customer.phone || !customer.address || !customer.city ||
-         !customer.state || !customer.postalCode || !customer.country || !customer.customerCode || !customer.note){
-          alert("Please fill all the fields!!!");
-          return
-      }
-       
+      let validationErrors = {};
 
+      if (!customer.name  || customer.name.length < 3) {
+        validationErrors.name = "Name must have 3 character or more";
+       }
+      if (!customer.email || !/\S+@\S+\.\S+/.test(customer.email)){
+        validationErrors.email = "Invalid email"
+      }
+      if( !customer.phone || customer.phone.length !== 10) {
+         validationErrors.phone = "Phone must have 10 digits"
+      }
+      if( !customer.postalCode || customer.postalCode.length !== 6 ){
+         validationErrors.postalCode = "The postal Code code must have 6 digits"
+      }
+      if( !customer.customerCode || customer.customerCode.length !== 4 ){
+        validationErrors.customerCode = "The customer Code code must have 4 digits"
+      }
+      if( !customer.note || customer.note.length < 10 ){
+      validationErrors.note = "Input must be at least 10 characters long."
+      }
+
+      if(Object.keys(validationErrors).length > 0){
+         return setValidationErrors(validationErrors)
+      }
+     
       try {
-        const response = await fetch("http://localhost:4000/customers",{
-            method: "POST",
-            body: formData
-         })
-         const data = await response.json();
-        if(response.ok){
-            navigate("/customers")
-        }else if (response.status === 400){
-            setValidationErrors(data)
-        }
-        else{
-            alert("Unable to add customer")
-        }
+       const currentDate = new Date().toISOString();
+       const isFirstVisit = !customer.firstVisit;
+
+       const db = getDatabase(app);
+       const newDocRef = push(ref(db, "customers"));
+       const customerData = {
+          ...customer,
+          firstVisit: isFirstVisit ? currentDate : customer.firstVisit,
+          lastVisit: currentDate,
+          totalVisits:1
+
+       }
+       await set(newDocRef,customerData);
+       navigate("/customers")
+       toast.success("Customer added successfully!!",{position:"top-center"})
       } catch (error) {
-         alert("Server not responding")
+         alert("Unable to connect to the Server!!!")
       }
    }
    
@@ -49,7 +73,7 @@ const CreateCustomer = () => {
           <input
             name="name"
             autoComplete="off"
-            className={`outline-none w-full border-b-2  border-gray-200 focus:border-[#4baf4f] ${ validationErrors.name > 0 ? "border-red-500" : "border-gray-200"}  text-gray-600 text-sm placeholder:text-gray-500  px-1`}
+            className={`outline-none w-full border-b-2  border-gray-200 focus:border-[#4baf4f] ${ validationErrors.name  ? "border-red-500" : "border-gray-200"}  text-gray-600 text-sm placeholder:text-gray-500  px-1`}
             placeholder="Name"
             type="text"
           />

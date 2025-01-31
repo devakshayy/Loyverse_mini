@@ -4,6 +4,9 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { MdEmail, MdCall, MdMessage } from "react-icons/md";
 import { FaLocationDot } from "react-icons/fa6";
 import { LiaBarcodeSolid } from "react-icons/lia";
+import { toast } from "sonner";
+import app from "../firebase";
+import { getDatabase,get,ref,set} from "firebase/database";
 
 const CustomerEdit = () => {
    const {cusid} = useParams();
@@ -11,58 +14,69 @@ const CustomerEdit = () => {
    const [validationErrors,setValidationErrors] = useState({})
    const navigate = useNavigate()
    
-   const getCustomer = () => {
-      fetch(`http://localhost:4000/customers/${cusid}`)
-      .then(response => {
-         if(response.ok){
-            return response.json()
-         }throw new Error()
-      })
-      .then(data => {
-        setInitialData(data)
-      })
-      .catch(error => {
-        alert("Unable to get Customer!!!..")
-      })
-   }
-
-   useEffect(getCustomer,[])
-   
-   console.log(initialData);
+  useEffect(() => {
+    const getCustomers = async () => {
+     const db = getDatabase(app);
+     const dbRef = ref(db,`customers/${cusid}`);
+     const snapShot = await get(dbRef);
+     if(snapShot.exists()){
+       setInitialData(snapShot.val());
+     }else{
+       toast.error("Unable to get the customer")
+     }
+    }
+    getCustomers()
+ }, [cusid])
    
 
    const handleSubmit = async (e) => {
-      e.preventDefault(); 
+      e.preventDefault();
       const formData = new FormData(e.target);
       const customer = Object.fromEntries(formData.entries());
-      console.log(customer);
+      let validationErrors = {};
 
-      if(!customer.name || !customer.email || !customer.phone || !customer.address || !customer.city ||
-         !customer.state || !customer.postalCode || !customer.country || !customer.customerCode || !customer.note){
-          alert("Please fill all the fields!!!");
-          return
+      if (!customer.name  || customer.name.length < 3) {
+        validationErrors.name = "Name must have 3 character or more";
+       }
+      if (!customer.email || !/\S+@\S+\.\S+/.test(customer.email)){
+        validationErrors.email = "Invalid email"
+      }
+      if( !customer.phone || customer.phone.length !== 10) {
+         validationErrors.phone = "Phone must have 10 digits"
+      }
+      if( !customer.postalCode || customer.postalCode.length !== 6 ){
+         validationErrors.postalCode = "The postal Code code must have 6 digits"
+      }
+      if( !customer.customerCode || customer.customerCode.length !== 4 ){
+        validationErrors.customerCode = "The customer Code code must have 4 digits"
+      }
+      if( !customer.note || customer.note.length < 10 ){
+      validationErrors.note = "Input must be at least 10 characters long."
       }
 
+      if(Object.keys(validationErrors).length > 0){
+         return setValidationErrors(validationErrors)
+      }
+     
       try {
-        const response = await fetch(`http://localhost:4000/customers/${cusid}`,{
-            method: "PATCH",
-            body: formData
-         })
-         const data = await response.json();
-        if(response.ok){
-            navigate("/customers")
-        }else if (response.status === 400){
-            setValidationErrors(data)
-        }
-        else{
-            alert("Unable to Update the Customer!!")
-        }
+       const firstVisit = initialData.firstVisit;
+       const currentDate = new Date().toISOString();
+       const totalVisits = Number(initialData.totalVisits) 
+       const db = getDatabase(app);
+       const newDocRef = ref(db,`customers/${cusid}`);
+       const customerData = {
+          ...customer,
+          firstVisit: firstVisit,
+          lastVisit: currentDate,
+          totalVisits: totalVisits +1
+       }
+       await set(newDocRef,customerData);
+       toast.success("Customer Updated successfully!!",{position:"top-center"})
+       navigate(`/customers/view/${cusid}`)
       } catch (error) {
-         alert("Server not responding!!!....")
+         toast.warning("Unable to connect to the Server!!!")
       }
-   }
-   console.log(initialData.totalVisits);
-   
+   }   
   return (
     <div className="p-2 h-screen w-full bg-white text-gray-900 overflow-auto">
       <div className="flex flex-col bg-white w-1/2 rounded-md shadow-2xl p-6">

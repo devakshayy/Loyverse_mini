@@ -7,54 +7,55 @@ import { FaUserEdit } from "react-icons/fa";
 import { IoChevronBack } from "react-icons/io5";
 import { MdDeleteSweep } from "react-icons/md";
 import { useNavigate, useParams } from 'react-router-dom';
+import { getDatabase, ref ,get,remove } from 'firebase/database';
+import app from '../firebase';
+import { toast } from 'sonner';
 
 
 const CustomerView = () => {
 
   const navigate = useNavigate();
-  const params = useParams()
+  const {cusid} = useParams()
   const [initialData, setInitialData] = useState([]);
-
-  const getCustomer = () => {
-    fetch(`http://localhost:4000/customers/${params.cusid}`)
-    .then(response => {
-       if(response.ok){
-        return response.json();
+  useEffect(() => {
+    const getCustomer = async () => {
+       const db = getDatabase(app);
+       const dbRef = ref(db,`customers/${cusid}`);
+       const snapShot = await get(dbRef);
+       if (snapShot.exists()) {
+        setInitialData({ ...snapShot.val(), id: cusid });
+      }else{
+         alert("Unable to get itmes")
        }
-       throw new Error();
-    })
-    .then(data => {
-      setInitialData(data)
-    })
-    .catch(error => {
-      alert("Unable to get the Customer!!!")
-    })
-  }
+    }
+    getCustomer()
+ }, [cusid])
 
-  useEffect(getCustomer,[])   
- 
-  const handleDelete = (id,name) => {
-     const customer = name.toUpperCase();
-     const userChoice =  confirm(`Are you sure want to remove "${customer}"`)
+  
+  const handleDelete = (id, name) => {
+    const customerName = name.toUpperCase();
+    const db = getDatabase(app);
+    const dbRef = ref(db, `customers/${id}`);
 
-     if(userChoice){
-      fetch(`http://localhost:4000/customers/${id}`,{
-        method: "DELETE"
-       })
-       .then(response => {
-        if(!response.ok){
-          throw new Error();
-        }else{
-          navigate("/customers")
-        }
-       })
-       .catch("Unable to remove customer")
-     }else {
-       navigate("/customers")
-
-     }   
-  }
-
+    toast(`Are you sure you want to delete ${customerName}???`, {
+      position: 'top-center',
+      action: {
+        label: "Yes",
+        onClick: async () => {
+          try {
+            await remove(dbRef);
+            toast.success(`${customerName} has been deleted successfully.`);
+            setTimeout(() => {
+              navigate("/customers")
+            }, 1000);
+          } catch (error) {
+            toast.error(`Failed to delete ${customerName}: ${error.message}`);
+          }
+        },
+      },
+    });
+  };
+   
   const editNavHandler = (id) => {
       navigate(`/customers/edit/${id}`)
   }
@@ -88,7 +89,7 @@ const CustomerView = () => {
            </div>
            <div  className='flex items-center gap-2'>
             <FaLocationDot />
-             <div className='text-xs text-gray-600'>Adress at {initialData.city},{initialData.state}</div>
+             <div className='text-xs text-gray-600'>{initialData.address} at {initialData.city},{initialData.state}</div>
             </div>
            <div  className='flex items-center gap-2'>
              <LiaBarcodeSolid />
@@ -101,8 +102,8 @@ const CustomerView = () => {
        </div>
          <div className='text-xs px-3 py-1 flex justify-between text-gray-600 border-t-2' >  {/* first div */}
            <div>
-           <div><span className='text-gray-900 font-semibold'>First Visit </span>: {initialData.firstVisit}</div>
-            <div><span className='text-gray-900 font-semibold'>Last Visit</span>: {initialData.lastVisit}</div>
+           <div><span className='text-gray-900 font-semibold'>First Visit </span>: {initialData?.firstVisit ? initialData.firstVisit.slice(0,10) : "N/A"}</div>
+            <div><span className='text-gray-900 font-semibold'>Last Visit</span>: {initialData?.lastVisit ? initialData.lastVisit.slice(0,10) : "N/A"}</div>
             <div><span className='text-gray-900 font-semibold'>Visits</span>:  {initialData.totalVisits}</div>
            </div>
            <div>

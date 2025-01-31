@@ -22,7 +22,7 @@ const Edit = () => {
       }
      }
      getItems()
-  }, [])
+  }, [id])
   
 
   async function handleSubmit(event) {

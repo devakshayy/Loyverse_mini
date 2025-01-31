@@ -80,7 +80,6 @@ const Items = () => {
         const dbRef = ref(db,"items");
         const snapShot = await get(dbRef);
         if(snapShot.exists()){
-          // setItems(Object.values(snapShot.val()));
           const myData = snapShot.val();
           const tempArray = Object.keys(myData).map(myFireid => {
             return {
@@ -121,7 +120,7 @@ const Items = () => {
       setFilteredItem(filteredItem);
      };
     
-  }  
+  }    
   return (
     <div className="p-4 h-screen w-full text-white">
       <div className=" flex flex-col justify-between gap-5 pt-[24px] pb-10  bg-white w-full shadow-lg rounded-sm">
