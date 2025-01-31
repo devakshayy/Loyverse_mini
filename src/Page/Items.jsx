@@ -95,13 +95,29 @@ const Items = () => {
      getProducts()
   }, [])
   
-  const deleteItem = async (id,name) => {
+  const deleteItem = (id, name) => {
+    const itemName = name.toUpperCase();
     const db = getDatabase(app);
-    const dbRef = ref(db,`items/${id}`)
-    await remove(dbRef);
-    toast.error(`Item "${name}" has been removed`)
-    window.location.reload();
-  }
+    const dbRef = ref(db, `items/${id}`);
+
+    toast(`Are you sure you want to delete ${itemName}???`, {
+      position: 'top-center',
+      action: {
+        label: "Yes",
+        onClick: async () => {
+          try {
+            await remove(dbRef);
+            toast.success(`${itemName} has been Removed successfully.`);
+            setTimeout(() => {
+              navigate("/items")
+            }, 1000);
+          } catch (error) {
+            toast.error(`Failed to delete ${itemName}: ${error.message}`);
+          }
+        },
+      },
+    });
+  };
 
   const viewHandler = (id) => {
     navigate(`/view/${id}`);
