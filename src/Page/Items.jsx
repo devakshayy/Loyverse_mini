@@ -108,9 +108,7 @@ const Items = () => {
           try {
             await remove(dbRef);
             toast.success(`${itemName} has been Removed successfully.`);
-            setTimeout(() => {
-              getProducts()
-            }, 1000);
+            window.location.reload()
           } catch (error) {
             toast.error(`Failed to delete ${itemName}: ${error.message}`);
           }
