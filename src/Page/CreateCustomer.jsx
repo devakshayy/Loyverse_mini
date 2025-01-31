@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { MdEmail, MdCall, MdMessage } from "react-icons/md";
 import { FaLocationDot } from "react-icons/fa6";
 import { LiaBarcodeSolid } from "react-icons/lia";
+import app from "../firebase";
+import { getDatabase,set,push,ref } from "firebase/database";
 
 const CreateCustomer = () => {
    const navigate = useNavigate()
@@ -21,19 +23,11 @@ const CreateCustomer = () => {
        
 
       try {
-        const response = await fetch("http://localhost:4000/customers",{
-            method: "POST",
-            body: formData
-         })
-         const data = await response.json();
-        if(response.ok){
-            navigate("/customers")
-        }else if (response.status === 400){
-            setValidationErrors(data)
-        }
-        else{
-            alert("Unable to add customer")
-        }
+        const db= getDatabase(app);
+        const dbRef = push(ref(db,"customers"));
+        set(dbRef,customer);
+        navigate("/customers")
+        toast.success("Customer added successfully!!")
       } catch (error) {
          alert("Server not responding")
       }

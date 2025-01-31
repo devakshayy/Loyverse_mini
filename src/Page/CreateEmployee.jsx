@@ -15,15 +15,29 @@ const CreateEmployee = () => {
     const formData = new FormData(event.target)
     const employee = Object.fromEntries(formData.entries());
     
-    if(!employee.name || !employee.email || !employee.phone || !employee.role || !employee.poseCode){
-      alert("Please fill all the fields!!!")
-      return
-    }
+    let validationErrors = {};
 
+    if (!employee.name  || employee.name.length < 2) {
+      validationErrors.name = "Name must have 2 character or more";
+     }
+    if (!employee.email || !/\S+@\S+\.\S+/.test(employee.email)){
+      validationErrors.email = "Invalid email"
+    }
+    if( !employee.phone || employee.phone.length !== 10) {
+       validationErrors.phone = "Phone must have 10 digits"
+    }
+    if( !employee.poseCode || employee.poseCode.length !== 4 ){
+       validationErrors.poseCode = "The Pose code must have 4 digits"
+    }
+    if(Object.keys(validationErrors).length > 0){
+       return setValidationErrors(validationErrors)
+    }
+   
     try {
      const db = getDatabase(app);
      const newDocRef = push(ref(db, "employees"));
      set(newDocRef,employee);
+     navigate("/employees")
      toast.success("Employee added successfully!!")
     } catch (error) {
        alert("Unable to connect to the Server!!!")

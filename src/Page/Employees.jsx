@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
-import { AiOutlineDelete,AiFillDelete } from "react-icons/ai";
+import { AiOutlineDelete, AiFillDelete } from "react-icons/ai";
 import { Link } from "react-router-dom";
+import { get, getDatabase, ref, remove } from "firebase/database";
+import { toast } from "sonner";
+import app from "../firebase";
 
 const Employees = () => {
-  
   const [employees, setEmployees] = useState([]);
   const [searchEmployee, setSearchEmployee] = useState("");
-  const [filteredEmployee, setFilteredEmployee] = useState([])
+  const [filteredEmployee, setFilteredEmployee] = useState([]);
 
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
-  
-
 
   const handleCheckboxChange = (id) => {
     setSelectedIds((prev) =>
@@ -40,9 +40,11 @@ const Employees = () => {
       alert("No customers selected to delete.");
       return;
     }
-  
-    const userChoice = confirm(`Are you sure you want to remove the selected Employee?`);
-    
+
+    const userChoice = confirm(
+      `Are you sure you want to remove the selected Employee?`
+    );
+
     if (userChoice) {
       Promise.all(
         selectedIds.map((id) =>
@@ -53,12 +55,14 @@ const Employees = () => {
       )
         .then((responses) => {
           const failedResponses = responses.filter((response) => !response.ok);
-  
+
           if (failedResponses.length > 0) {
             throw new Error("Some deletions failed.");
           } else {
-            setFilteredEmployee((prev) => prev.filter((employee) => !selectedIds.includes(employee.id)));
-      
+            setFilteredEmployee((prev) =>
+              prev.filter((employee) => !selectedIds.includes(employee.id))
+            );
+
             setSelectedIds([]);
             setSelectAll(false);
             alert("Selected customers removed successfully.");
@@ -69,80 +73,87 @@ const Employees = () => {
         });
     }
   };
-  
-
-  
-  const getEmployees = () => {
-     fetch("http://localhost:4000/employees")
-     .then(response => {
-         if(response.ok){
-            return response.json();
-         }
-         throw new Error();
-     })
-     .then(data => {
-        setEmployees(data);
-     })
-     .catch(error => {
-        alert("Unable to get Employees data")
-     })
-  }
-
-  useEffect(getEmployees,[])
-
-  const handleDelete = (id,name) => {
-    const EmployeeName = name.toUpperCase();
-    const userChoice = confirm(`Are you sure you want to Remove "${EmployeeName}"`);
-    if (!userChoice) {
-        return
-     } else {
-     fetch("http://localhost:4000/employees/"+ id,{
-      method: "DELETE",
-     })
-     .then(response => {
-       if(!response.ok){
-        throw new Error()
-       }
-       getEmployees()
-     })
-     .catch(error => {
-       alert("Unable to Delete employee")
-     })}
-  }  
-
-  const handleSearch = (e) => {
-      const searchEmployee = e.target.value;
-      setSearchEmployee(searchEmployee)
-      const filteredEmployee = employees.filter(employee => 
-                                                  employee.name.toLowerCase().includes(searchEmployee.toLowerCase()) ||
-                                                  employee.phone.toString().includes(searchEmployee.toLowerCase()) ||
-                                                  employee.role.toLowerCase().includes(searchEmployee.toLowerCase()));
-      setFilteredEmployee(filteredEmployee);  
-  }
 
   useEffect(() => {
-    setFilteredEmployee(employees)
-  },[employees])
-  
+    const getEmployees = async () => {
+      const db = getDatabase(app);
+      const dbRef = ref(db, "employees");
+      const snapShot = await get(dbRef);
+      if (snapShot.exists()) {
+        const myData = snapShot.val();
+        const tempArray = Object.keys(myData).map((myFireid) => {
+          return {
+            ...myData[myFireid],
+            id: myFireid,
+          };
+        });
+        setEmployees(tempArray);
+      } else {
+        toast.error("Unable to get employees data", {
+          position: "bottom-right",
+        });
+      }
+    };
+    getEmployees();
+  }, []);
+
+  const handleDelete = (id, name) => {
+    const EmployeeName = name.toUpperCase();
+    const db = getDatabase(app);
+    const dbRef = ref(db, `employees/${id}`);
+
+    toast(`Are you sure you want to delete ${EmployeeName}???`, {
+      action: {
+        label: "Yes",
+        onClick: async () => {
+          try {
+            await remove(dbRef);
+            toast.success(`${EmployeeName} has been deleted successfully.`);
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } catch (error) {
+            toast.error(`Failed to delete ${EmployeeName}: ${error.message}`);
+          }
+        },
+      },
+    });
+  };
+
+  const handleSearch = (e) => {
+    const searchEmployee = e.target.value;
+    setSearchEmployee(searchEmployee);
+    const filteredEmployee = employees.filter(
+      (employee) =>
+        employee.name.toLowerCase().includes(searchEmployee.toLowerCase()) ||
+        employee.phone.toString().includes(searchEmployee.toLowerCase()) ||
+        employee.role.toLowerCase().includes(searchEmployee.toLowerCase())
+    );
+    setFilteredEmployee(filteredEmployee);
+  };
+
+  useEffect(() => {
+    setFilteredEmployee(employees);
+  }, [employees]);
+
   return (
     <div className="p-4 h-screen w-full  text-white">
       <div className=" flex flex-col justify-between gap-5 pt-[24px] pb-5  bg-white w-full shadow-lg rounded-sm">
         <div className=" px-[30px] flex items-center justify-between ">
-          
           <div>
             <Link
               to="/createemployee"
               className="py-1 px-1  text-[13px] sm:text-xs font-medium rounded-sm text-white bg-[#8cc748]"
             >
-             <button>+ ADD EMPLOYEE</button>
+              <button>+ ADD EMPLOYEE</button>
             </Link>
             {selectedIds.length > 0 && (
-                     <button
-                     className="ml-2 py-1 px-2 text-[11px] sm:text-xs font-medium rounded-sm text-white bg-red-500"
-                     onClick={handleDeleteSelected}
-                   >
-                     Delete
-                   </button>
+              <button
+                className="ml-2 py-1 px-2 text-[11px] sm:text-xs font-medium rounded-sm text-white bg-red-500"
+                onClick={handleDeleteSelected}
+              >
+                Delete
+              </button>
             )}
           </div>
 
@@ -190,44 +201,51 @@ const Employees = () => {
                     Role
                   </th>
                   <th scope="col" className="px-6 py-3 text-center">
-                     Action
+                    Action
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {filteredEmployee.map((employee,idx) => (
-                      <tr key={idx} className="bg-white border-b hover:bg-gray-50 cursor-pointer dark:hover:bg-gray-100">
-                      <td className="w-4 p-4">
-                        <div className="flex items-center">
-                          <input
-                             checked={selectedIds.includes(employee.id)}
-                             onChange={() => handleCheckboxChange(employee.id)}
-                            onClick={(e) => e.stopPropagation()}
-                            id="checkbox-table-search-1"
-                            type="checkbox"
-                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                          />
-                          <label
-                            htmlFor="checkbox-table-search-1"
-                            className="sr-only"
-                          >
-                            checkbox
-                          </label>
-                        </div>
-                      </td>
-                      <th
-                        scope="row"
-                        className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap "
+                {filteredEmployee.map((employee, idx) => (
+                  <tr
+                    key={idx}
+                    className="bg-white border-b hover:bg-gray-50 cursor-pointer dark:hover:bg-gray-100"
+                  >
+                    <td className="w-4 p-4">
+                      <div className="flex items-center">
+                        <input
+                          checked={selectedIds.includes(employee.id)}
+                          onChange={() => handleCheckboxChange(employee.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          id="checkbox-table-search-1"
+                          type="checkbox"
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                        />
+                        <label
+                          htmlFor="checkbox-table-search-1"
+                          className="sr-only"
+                        >
+                          checkbox
+                        </label>
+                      </div>
+                    </td>
+                    <th
+                      scope="row"
+                      className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap "
+                    >
+                      {employee.name}
+                    </th>
+                    <td className="px-6 py-4">{employee.email}</td>
+                    <td className="px-6 py-4">{employee.phone}</td>
+                    <td className="px-6 py-4">{employee.role}</td>
+                    <td className="px-6 py-4 text-center text-red-500 ">
+                      <button
+                        onClick={() => handleDelete(employee.id, employee.name)}
                       >
-                        {employee.name}
-                      </th>
-                      <td className="px-6 py-4">{employee.email}</td>
-                      <td className="px-6 py-4">{employee.phone}</td>
-                      <td className="px-6 py-4">{employee.role}</td>
-                      <td className="px-6 py-4 text-center text-red-500 " >
-                        <button onClick={() => handleDelete(employee.id,employee.name)}><AiFillDelete /></button>
-                      </td>
-                    </tr>
+                        <AiFillDelete />
+                      </button>
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>

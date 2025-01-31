@@ -30,10 +30,6 @@ const Create = () => {
     if (!item.cost || isNaN(item.cost) || Number(item.cost) <= 0) {
       validationErrors.cost = "The Cost is not valid";
     }
-    if (!item.category || item.category.length < 2) {
-      validationErrors.category =
-        "The category should be at least 2 characters";
-    }
     if (!item.description || item.description.length < 10) {
       validationErrors.description =
         "The description length should be at least 10 characters";
@@ -49,7 +45,7 @@ const Create = () => {
       const newDocRef = push(ref(db, "items"));
     
       const saveItemPromise = set(newDocRef, item); 
-      
+
       toast.promise(saveItemPromise, {
         loading: "Saving item...",
         success: "Item saved successfully!",
