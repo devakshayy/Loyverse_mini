@@ -109,7 +109,7 @@ const Items = () => {
             await remove(dbRef);
             toast.success(`${itemName} has been Removed successfully.`);
             setTimeout(() => {
-              navigate("/items")
+              getProducts()
             }, 1000);
           } catch (error) {
             toast.error(`Failed to delete ${itemName}: ${error.message}`);
