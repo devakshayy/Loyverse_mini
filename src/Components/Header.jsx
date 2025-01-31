@@ -6,7 +6,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 const Header = ({openToggle}) => {
    const data = useLocation();
+   const pageTitle = data.pathname.split("/")[1] || "";
    const navigate = useNavigate();
+   console.log(data);
   return (
     <div className='fixed flex items-center justify-between text-sm text-white gap-4 top-0 z-50 w-full px-4 py-2 bg-[#5BA4FF] border-b border-gray-200' >
      
@@ -14,7 +16,7 @@ const Header = ({openToggle}) => {
        <button onClick={openToggle}>
        <FiMenu  />
        </button>
-       <div className='font-semibold'>Item list</div>
+       <div className='font-semibold'>{pageTitle.charAt(0).toUpperCase() + pageTitle.slice(1)}</div>
        </div>
         <div className='flex items-center justify-center gap-2'>
              <button onClick={() =>navigate("/")} className='font-semibold'>{data.state?"Logout":"Login"}</button>
