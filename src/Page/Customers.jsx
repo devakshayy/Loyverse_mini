@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate} from "react-router-dom";
 import { FaAngleRight, FaAngleLeft } from "react-icons/fa";
+import app from "../firebase";
+import { getDatabase,get,ref } from "firebase/database";
+import { toast } from "sonner";
 
 const Customers = () => {
   const navigate = useNavigate();
@@ -66,24 +69,27 @@ const Customers = () => {
     }
   };
   
-
-  const getCustomers = () => {
-    fetch("http://localhost:4000/customers")
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error();
-      })
-      .then((data) => {
-        setCustomers(data);
-      })
-      .catch((error) => {
-        alert("Unable to get the Customers data!!!");
-      });
-  };
-
-  useEffect(getCustomers, []);
+  useEffect(() => {
+    const getCustomers = async () =>{
+      const db = getDatabase(app);
+      const dbRef = ref(db,"customers");
+      const snapShot = await get(dbRef);
+      if(snapShot.exists()){
+        const myData = snapShot.val();
+        const tempArray = Object.keys(myData).map(myFireid => {
+           return {
+              ...myData[myFireid],
+              id:myFireid
+           }
+        })
+        setCustomers(tempArray)
+      }else{
+        toast.error('Unable to get Customers')
+      }
+    }
+    getCustomers()
+  }, [])
+  
 
   const viewHandler = (id) => {
     navigate(`/customers/view/${id}`);
@@ -105,6 +111,7 @@ const Customers = () => {
   useEffect(() => {
     setFilteredCus(customers);
   },[customers])
+
   return (
     <div className="p-4 h-screen w-full  text-white">
       <div className=" flex flex-col justify-between gap-5 pt-[24px] pb-5  bg-white w-full shadow-lg rounded-sm">
@@ -217,11 +224,11 @@ const Customers = () => {
                         <div className="text-gray-500">{customer.phone}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">{customer.firstVisit}</td>
-                    <td className="px-6 py-4">{customer.lastVisit}</td>
-                    <td className="px-6 py-4">{customer.totalVisits}</td>
-                    <td className="px-6 py-4">{customer.pointsSpent}</td>
-                    <td className="px-6 py-4">{customer.pointsBalance}</td>
+                    <td className="px-6 py-4">{customer?.firstVisit ? customer.firstVisit.slice(0,10) : "N/A"}</td>
+                    <td className="px-6 py-4">{customer?.lastVisit ? customer.lastVisit.slice(0,10) : "N/A"}</td>
+                    <td className="px-6 py-4">{customer?.totalVisits}</td>
+                    <td className="px-6 py-4">{customer?.pointsSpent}</td>
+                    <td className="px-6 py-4">{customer?.pointsBalance}</td>
                     {/* <td className="px-6 py-4 text-center text-red-500 ">
                       <button>
                         <AiFillDelete />

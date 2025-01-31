@@ -36,7 +36,7 @@ const CreateEmployee = () => {
     try {
      const db = getDatabase(app);
      const newDocRef = push(ref(db, "employees"));
-     set(newDocRef,employee);
+     await set(newDocRef,employee);
      navigate("/employees")
      toast.success("Employee added successfully!!")
     } catch (error) {
