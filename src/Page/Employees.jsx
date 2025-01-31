@@ -161,7 +161,7 @@ const Employees = () => {
             <input
               value={searchEmployee}
               onChange={handleSearch}
-              className="outline-none border-b-2 w-[120px] border-gray-800 focus:border-gray-200  text-gray-600 text-sm  px-1"
+              className="outline-none border-b-2 w-[120px] sm:w-[300px] border-gray-800 focus:border-gray-200  text-gray-600 text-sm  px-1"
               placeholder="Search... "
               type="text"
             />
