@@ -1,4 +1,3 @@
-import React, { useState } from 'react'
 import { FiMenu } from "react-icons/fi";
 import { FaUserCircle } from "react-icons/fa";
 import { useLocation, useNavigate } from 'react-router-dom';
