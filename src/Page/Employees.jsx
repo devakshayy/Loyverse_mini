@@ -145,7 +145,7 @@ const Employees = () => {
               to="/createemployee"
               className="py-1 px-1  text-[13px] sm:text-xs font-medium rounded-sm text-white bg-[#8cc748]"
             >
-              <button>+ ADD EMPLOYEE</button>
+              + ADD EMPLOYEE
             </Link>
             {selectedIds.length > 0 && (
               <button
@@ -161,7 +161,7 @@ const Employees = () => {
             <input
               value={searchEmployee}
               onChange={handleSearch}
-              className="outline-none border-b-2 w-[120px] sm:w-[300px] border-gray-800 focus:border-gray-200  text-gray-600 text-sm  px-1"
+              className="outline-none border-b-2 w-[110px] sm:w-[300px] border-gray-800 focus:border-gray-200  text-gray-600 text-sm  px-1"
               placeholder="Search... "
               type="text"
             />

@@ -137,7 +137,7 @@ const Customers = () => {
             <input
               value={search}
               onChange={handleSearch}
-              className="outline-none w-[150px] sm:w-[300px] border-b-2 border-gray-800 focus:border-gray-200  text-gray-600 text-sm  px-1"
+              className="outline-none w-[120px] sm:w-[300px] border-b-2 border-gray-800 focus:border-gray-200  text-gray-600 text-sm  px-1"
               placeholder="Search... "
               type="text"
             />
