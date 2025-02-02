@@ -115,11 +115,11 @@ const Customers = () => {
   return (
     <div className="p-4 h-screen w-full  text-white">
       <div className=" flex flex-col justify-between gap-5 pt-[24px] pb-5  bg-white w-full shadow-lg rounded-sm">
-        <div className=" px-[30px] flex items-center justify-between ">
+        <div className=" px-[20px] flex items-center justify-between ">
           <div>
             <Link
               to="/createcustomer"
-              className="py-1 px-2 text-[13px] sm:text-xs font-medium rounded-sm text-white bg-[#8cc748]"
+              className="py-1 px-1 text-[13px] sm:text-xs font-medium rounded-sm text-white bg-[#8cc748]"
             >
              <button>+ ADD CUSTOMER</button>
             </Link>
