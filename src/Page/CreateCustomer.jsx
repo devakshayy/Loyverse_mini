@@ -65,7 +65,7 @@ const CreateCustomer = () => {
    
   return (
     <div className="p-2 h-screen w-full bg-white text-gray-900 overflow-auto">
-      <div className="flex flex-col bg-white w-1/2 rounded-md shadow-2xl p-6">
+      <div className="flex flex-col bg-white w-full sm:w-1/2 rounded-md shadow-2xl p-6">
         <div className="flex items-center justify-center">
           <FaUserCircle className="w-20 rounded-full h-16" />
         </div>
@@ -108,50 +108,58 @@ const CreateCustomer = () => {
               type="text"
             />
           </div>
-          <div className="flex justify-between">
-            <div className="flex flex-col gap-4">
-              {/* div 1 */}
-              <div className="flex items-center gap-2">
-                <input
-                  name="city"
-                  autoComplete="off"
-                  className="outline-none border-b-2 border-gray-200  focus:border-[#4baf4f]  text-gray-600 text-sm placeholder:text-gray-500  px-1"
-                  placeholder="City"
-                  type="text"
-                />
+          <div className="flex flex-wrap md:flex-nowrap gap-4">
+              {/* Left Side Inputs */}
+              <div className="flex w-full md:w-1/2 flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <input
+                   
+                    name="city"
+                    autoComplete="off"
+                    className="outline-none w-full border-b-2 border-gray-200 focus:border-[#4baf4f] text-gray-600 text-sm placeholder:text-gray-500 px-1"
+                    placeholder="City"
+                    type="text"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    
+                    name="state"
+                    autoComplete="off"
+                    className="outline-none w-full border-b-2 border-gray-200 focus:border-[#4baf4f] text-gray-600 text-sm placeholder:text-gray-500 px-1"
+                    placeholder="State"
+                    type="text"
+                  />
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <input
-                  name="state"
-                  autoComplete="off"
-                  className="outline-none border-b-2  border-gray-200  focus:border-[#4baf4f]  text-gray-600 text-sm placeholder:text-gray-500  px-1"
-                  placeholder="State"
-                  type="text"
-                />
+
+              {/* Right Side Inputs */}
+              <div className="flex w-full md:w-1/2 flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    
+                    name="postalCode"
+                    autoComplete="off"
+                    className={`outline-none w-full border-b-2 ${
+                      validationErrors.postalCode
+                        ? "border-red-500"
+                        : "border-gray-200"
+                    } focus:border-[#4baf4f] text-gray-600 text-sm placeholder:text-gray-500 px-1`}
+                    placeholder="Postal Code"
+                    type="text"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    name="country"
+                    autoComplete="off"
+                    className="outline-none w-full border-b-2 border-gray-200 focus:border-[#4baf4f] text-gray-600 text-sm placeholder:text-gray-500 px-1"
+                    placeholder="Country"
+                    type="text"
+                  />
+                </div>
               </div>
             </div>
-            <div className="flex flex-col gap-4">
-              {/* div 2 */}
-              <div className="flex items-center gap-2">
-                <input
-                  name="postalCode"
-                  autoComplete="off"
-                  className={`outline-none w-full border-b-2  border-gray-200 focus:border-[#4baf4f] ${ validationErrors.postalCode ? "border-red-500" : "border-gray-200"}  text-gray-600 text-sm placeholder:text-gray-500  px-1`}
-                  placeholder="Postal code"
-                  type="text"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  name="country"
-                  autoComplete="off"
-                  className="outline-none border-b-2  border-gray-200  focus:border-[#4baf4f]  text-gray-600 text-sm  placeholder:text-gray-500 px-1"
-                  placeholder="Country"
-                  type="text"
-                />
-              </div>
-            </div>
-          </div>
           <div className="flex items-center gap-2 w-full">
             <LiaBarcodeSolid />
             <input
