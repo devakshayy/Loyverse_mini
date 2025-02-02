@@ -121,7 +121,7 @@ const Customers = () => {
               to="/createcustomer"
               className="py-1 px-2 text-[13px] sm:text-xs font-medium rounded-sm text-white bg-[#8cc748]"
             >
-             + ADD CUSTOMER
+             <button>+ ADD CUSTOMER</button>
             </Link>
             {selectedIds.length > 0 && (
                      <button
