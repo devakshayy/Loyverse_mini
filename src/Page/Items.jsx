@@ -153,29 +153,29 @@ const Items = () => {
           to="/create"
           className="py-1 px-2 text-xs font-medium rounded-sm text-white bg-[#8cc748]"
         >
-          + ADD ITEM
+          <button> + ADD ITEM</button>
         </Link>
         )}
             
             
             <button
                 onClick={() => {toast.warning(`"import" is not available right now!`,{position:"bottom-right"})}}
-                className="py-1 px-2 text-xs font-medium rounded-sm text-gray-900 hover:bg-[#f2f2f2]">
+                className="py-1 px-2 hidden sm:block text-xs font-medium rounded-sm text-gray-900 hover:bg-[#f2f2f2]">
               IMPORT
             </button>
             <button onClick={() =>{toast.warning(`"Export" is not available right now!`,{position:"bottom-right"})}} 
-                    className="py-1 px-2 text-xs font-medium rounded-sm text-gray-900 hover:bg-[#f2f2f2]">
+                    className="py-1 px-2 hidden sm:block text-xs font-medium rounded-sm text-gray-900 hover:bg-[#f2f2f2]">
               EXPORT
             </button>
           </div>
-          <div className="flex gap-2 items-center ">
+          <div className="flex gap-2 items-center">
             <input
                 value={inputValue} 
                 onChange={handleChange}
-                className="outline-none border-b-2 border-gray-800 focus:border-gray-200 text-gray-600 mt-7 px-1"
+                className="outline-none mb-6 sm:mb-0 border-b-2 w-[140px] sm:w-[250px] border-gray-800 focus:border-gray-200 text-gray-600 mt-7 px-1"
                 placeholder="Search items... "
                 type="text" />
-            <form className="w-[150px]  mx-auto">
+            <form className="w-[150px] hidden sm:block  mx-auto">
               <label
                 htmlFor="categories"
                 className="block mb-1 text-[13px] font-medium text-gray-900"
@@ -196,7 +196,7 @@ const Items = () => {
                 <FaCaretDown className="absolute right-0 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
               </div>
             </form>
-            <form className="w-[150px] mx-auto">
+            <form className="w-[150px] hidden sm:block mx-auto">
               <label
                 htmlFor="categories"
                 className="block mb-1 text-[13px] font-medium text-gray-900"
